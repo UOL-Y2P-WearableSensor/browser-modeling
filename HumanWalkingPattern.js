@@ -1,12 +1,14 @@
 import {DigitalTwin} from './DigitalTwin.js';
 
 export class HumanWalkingPattern extends DigitalTwin{
-    
-    constructor(IMU_schedule) {
+
+    constructor(IMU_schedule, IMU_data) {
         super(IMU_schedule);
         this.#meshes_init();
         this.#scene_graph_init();
         this.#load_axesHelpers();
+        this.IMU_data = IMU_data;
+        this.max_data_quantity = IMU_data.length;
     }
 
     /**
@@ -145,25 +147,40 @@ export class HumanWalkingPattern extends DigitalTwin{
         this.mesh_joints[4].rotation.z= -this.angle;
     }
     
-    time=0;
+    time_idx=0;
+    time_idx_test=0;
+    scale = 0.2;
     mesh_update(){
-        this.#mesh_fixed_update();
-        this.#mesh_update_1();
-        this.#mesh_update_2();
-    }
-    #mesh_fixed_update(){
-        this.time+=0.1;
-        this.mesh_origin.rotation.y = Math.sin(this.time)/5;
+        if (this.time_idx >= this.max_data_quantity)    this.time_idx=0;
 
+        this.#mesh_fixed_update();  //using the integral of acceleration
+        this.#mesh_update_1();  
+        this.#mesh_update_2();
+        this.#mesh_body_update();
+        this.time_idx++;
+        this.time_idx_test++;
+    }
+    
+    #mesh_body_update(){
+        
+    }
+    
+    #mesh_fixed_update(){
+        this.mesh_origin.rotation.y = Math.sin(this.time_idx/10)/5;
+        this.mesh_origin.position.set(0, this.scale * this.IMU_data[this.time_idx], 0);
     }
     
     #mesh_update_1(){
-        this.mesh_joints[3].rotation.x = Math.sin(this.time)/2;
-        this.mesh_joints[4].rotation.x = -Math.sin(this.time)/2;
+        this.mesh_joints[3].rotation.x = Math.sin(2*Math.PI*this.time_idx_test/100)/2;
+        this.mesh_joints[4].rotation.x = -Math.sin(2*Math.PI*this.time_idx_test/100)/2;
     }    
     #mesh_update_2(){
-        this.mesh_joints[1].rotation.x = Math.sin(this.time)/2.5;
-        this.mesh_joints[2].rotation.x = -Math.sin(this.time)/2.5;
+        this.mesh_joints[1].rotation.x = Math.sin(2*Math.PI*this.time_idx_test/100)/2.5;
+        this.mesh_joints[2].rotation.x = -Math.sin(2*Math.PI*this.time_idx_test/100)/2.5;
     }
+    
+    IMU_data_update(new_data){
+        this.IMU_data = new_data;
+    }
+    
 }
-

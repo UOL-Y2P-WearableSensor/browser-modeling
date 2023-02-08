@@ -2,8 +2,10 @@ import {HumanWalkingPattern} from './HumanWalkingPattern.js';
 
 //read json './IMU_schedule.json'&'./IMU_data.json' synchronously via keywords "await"
 let response = await fetch('./IMU_schedule.json');
-const json = await response.json();
+const IMU_schedule_json = await response.json();
 response = await fetch('./IMU_data.json');
+const IMU_data_json = await response.json();
+
 
 //create web worker for rest async works
 let worker;
@@ -14,7 +16,8 @@ if (typeof (Worker) !== "undefined") {
 }
 
 //create DigitalTwin via the json
-let humanWalkingPattern = new HumanWalkingPattern(json["IMU_schedule"]);
+let humanWalkingPattern = new HumanWalkingPattern(IMU_schedule_json["IMU_schedule"],
+    IMU_data_json["IMU_data"]);
 let k = 0;
 
 console.log("start_animate():");
